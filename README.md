@@ -8,3 +8,8 @@ Open the repository link above.
 Open the index.html file in a browser.
 Enter an IP address in the input field.
 Click “Analyze” to see results.
+Demo Link:
+https://yanetbedilu7-00.github.io/-IP-Address-Analyzer/
+
+Repository Link:
+https://github.com/yanetbedilu7-00/-IP-Address-Analyzer

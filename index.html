@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP Address Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            width: 100%;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            padding: 30px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            opacity: 0.8;
+            font-size: 14px;
+        }
+
+        .body {
+            padding: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 16px;
+            font-family: monospace;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input.error {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        .result-card {
+            margin-top: 24px;
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .result-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 16px;
+            padding-left: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result-row {
+            display: flex;
+            padding: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .result-label {
+            width: 40%;
+            font-weight: 600;
+            color: #475569;
+            font-size: 14px;
+        }
+
+        .result-value {
+            width: 60%;
+            color: #1e293b;
+            font-family: monospace;
+            word-break: break-all;
+        }
+
+        .error-message {
+            margin-top: 20px;
+            padding: 12px;
+            background: #fee2e2;
+            border-left: 4px solid #ef4444;
+            border-radius: 8px;
+            color: #991b1b;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-public {
+            background: #10b981;
+            color: white;
+        }
+
+        .badge-private {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .badge-reserved {
+            background: #6b7280;
+            color: white;
+        }
+
+        @media (max-width: 600px) {
+            .body {
+                padding: 20px;
+            }
+            
+            .result-row {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .result-label, .result-value {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <h1>🔍 IP Address Analyzer</h1>
+                <p>Analyze IPv4 & IPv6 - Class, Scope & Default Subnet</p>
+            </div>
+            <div class="body">
+                <div class="input-group">
+                    <label>🌐 Enter IP Address</label>
+                    <input type="text" id="ipInput" placeholder="e.g., 192.168.1.1 or 2001:db8::1" autocomplete="off">
+                </div>
+                <button onclick="analyzeIP()">Analyze IP</button>
+                
+                <div id="result" style="display: none;"></div>
+                <div id="error" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function analyzeIPv4(ip) {
+            const parts = ip.split('.');
+            const firstOctet = parseInt(parts[0]);
+            
+            let ipClass, defaultSubnet, subnetMask;
+            
+            if (firstOctet >= 1 && firstOctet <= 126) {
+                ipClass = 'A';
+                defaultSubnet = '/8';
+                subnetMask = '255.0.0.0';
+            } else if (firstOctet >= 128 && firstOctet <= 191) {
+                ipClass = 'B';
+                defaultSubnet = '/16';
+                subnetMask = '255.255.0.0';
+            } else if (firstOctet >= 192 && firstOctet <= 223) {
+                ipClass = 'C';
+                defaultSubnet = '/24';
+                subnetMask = '255.255.255.0';
+            } else if (firstOctet >= 224 && firstOctet <= 239) {
+                ipClass = 'D (Multicast)';
+                defaultSubnet = 'N/A';
+                subnetMask = 'N/A';
+            } else if (firstOctet >= 240 && firstOctet <= 255) {
+                ipClass = 'E (Reserved)';
+                defaultSubnet = 'N/A';
+                subnetMask = 'N/A';
+            } else {
+                ipClass = 'Unknown';
+                defaultSubnet = 'N/A';
+                subnetMask = 'N/A';
+            }
+            
+            // Check if private
+            let scope = 'Public';
+            if (firstOctet === 10 || 
+                (firstOctet === 172 && parseInt(parts[1]) >= 16 && parseInt(parts[1]) <= 31) ||
+                (firstOctet === 192 && parseInt(parts[1]) === 168)) {
+                scope = 'Private';
+            } else if (firstOctet === 127) {
+                scope = 'Private (Loopback)';
+            } else if (ipClass === 'D (Multicast)' || ipClass === 'E (Reserved)') {
+                scope = 'Reserved';
+            }
+            
+            return {
+                ip: ip,
+                version: 'IPv4',
+                class: ipClass,
+                scope: scope,
+                defaultSubnet: defaultSubnet,
+                subnetMask: subnetMask
+            };
+        }
+        
+        function analyzeIPv6(ip) {
+            let ipType = 'Unknown';
+            let scope = 'Unknown';
+            let defaultSubnet = '/64';
+            
+            // Simple IPv6 type detection based on prefix
+            const lowerIP = ip.toLowerCase();
+            
+            if (lowerIP.startsWith('2001:')) {
+                ipType = 'Global Unicast';
+                scope = 'Public';
+                defaultSubnet = '/64';
+            } else if (lowerIP.startsWith('fe80:')) {
+                ipType = 'Link-Local';
+                scope = 'Private';
+                defaultSubnet = 'N/A';
+            } else if (lowerIP.startsWith('fc') || lowerIP.startsWith('fd')) {
+                ipType = 'Unique Local (ULA)';
+                scope = 'Private';
+                defaultSubnet = '/64';
+            } else if (lowerIP.startsWith('ff')) {
+                ipType = 'Multicast';
+                scope = 'Reserved';
+                defaultSubnet = 'N/A';
+            } else if (ip === '::1') {
+                ipType = 'Loopback';
+                scope = 'Private';
+                defaultSubnet = 'N/A';
+            } else if (lowerIP.includes('2001:db8')) {
+                ipType = 'Documentation';
+                scope = 'Reserved';
+                defaultSubnet = '/64';
+            } else if (lowerIP.includes('2606:4700') || lowerIP.includes('2001:4860')) {
+                ipType = 'Global Unicast';
+                scope = 'Public';
+                defaultSubnet = '/64';
+            } else {
+                ipType = 'Global Unicast';
+                scope = 'Public';
+                defaultSubnet = '/64';
+            }
+            
+            return {
+                ip: ip,
+                version: 'IPv6',
+                type: ipType,
+                scope: scope,
+                defaultSubnet: defaultSubnet
+            };
+        }
+        
+        function validateIPv4(ip) {
+            const pattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+            return pattern.test(ip);
+        }
+        
+        function validateIPv6(ip) {
+            const pattern = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/;
+            return pattern.test(ip);
+        }
+        
+        function analyzeIP() {
+            const ipInput = document.getElementById('ipInput');
+            const ip = ipInput.value.trim();
+            
+            const resultDiv = document.getElementById('result');
+            const errorDiv = document.getElementById('error');
+            
+            // Hide previous results
+            resultDiv.style.display = 'none';
+            errorDiv.style.display = 'none';
+            ipInput.classList.remove('error');
+            
+            if (!ip) {
+                ipInput.classList.add('error');
+                errorDiv.innerHTML = '<div class="error-message">⚠️ Please enter an IP address</div>';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            let result = null;
+            
+            if (validateIPv4(ip)) {
+                result = analyzeIPv4(ip);
+            } else if (validateIPv6(ip)) {
+                result = analyzeIPv6(ip);
+            } else {
+                ipInput.classList.add('error');
+                errorDiv.innerHTML = '<div class="error-message">❌ Invalid IP address format. Please enter a valid IPv4 or IPv6 address.</div>';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            // Display results
+            let html = '<div class="result-card">';
+            html += '<div class="result-title">📊 Analysis Results</div>';
+            
+            html += '<div class="result-row">';
+            html += '<div class="result-label">IP Address</div>';
+            html += '<div class="result-value">' + result.ip + '</div>';
+            html += '</div>';
+            
+            html += '<div class="result-row">';
+            html += '<div class="result-label">Version</div>';
+            html += '<div class="result-value">' + result.version + '</div>';
+            html += '</div>';
+            
+            if (result.version === 'IPv4') {
+                html += '<div class="result-row">';
+                html += '<div class="result-label">Class</div>';
+                html += '<div class="result-value">' + result.class + '</div>';
+                html += '</div>';
+                
+                html += '<div class="result-row">';
+                html += '<div class="result-label">Subnet Mask</div>';
+                html += '<div class="result-value">' + result.subnetMask + '</div>';
+                html += '</div>';
+            } else {
+                html += '<div class="result-row">';
+                html += '<div class="result-label">Type</div>';
+                html += '<div class="result-value">' + result.type + '</div>';
+                html += '</div>';
+            }
+            
+            html += '<div class="result-row">';
+            html += '<div class="result-label">Scope</div>';
+            html += '<div class="result-value">';
+            if (result.scope === 'Public') {
+                html += '<span class="badge badge-public">🌍 Public</span>';
+            } else if (result.scope.includes('Private')) {
+                html += '<span class="badge badge-private">🏠 Private</span>';
+            } else {
+                html += '<span class="badge badge-reserved">🔒 Reserved</span>';
+            }
+            html += '</div>';
+            html += '</div>';
+            
+            html += '<div class="result-row">';
+            html += '<div class="result-label">Default Subnet</div>';
+            html += '<div class="result-value"><code>' + result.defaultSubnet + '</code></div>';
+            html += '</div>';
+            
+            html += '</div>';
+            
+            resultDiv.innerHTML = html;
+            resultDiv.style.display = 'block';
+        }
+        
+        // Allow Enter key to submit
+        document.getElementById('ipInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                analyzeIP();
+            }
+        });
+    </script>
+</body>
+</html>

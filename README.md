@@ -9,7 +9,7 @@ Open the index.html file in a browser.
 Enter an IP address in the input field.
 Click “Analyze” to see results.
 Demo Link:
-https://yanetbedilu7-00.github.io/-IP-Address-Analyzer/
+https://ip-address-analyzer-1hbazpt90-yanetbedilu7-00s-projects.vercel.app/
 
 Repository Link:
 https://github.com/yanetbedilu7-00/-IP-Address-Analyzer
